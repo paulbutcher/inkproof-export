@@ -91,6 +91,6 @@ def pdfOf (w h : Nat) (prims : List Prim) : ByteArray := Id.run do
 def pdf (dl : DisplayList) (w h : Nat) : ByteArray := pdfOf w h (lowerAll dl)
 
 theorem pdf_eq (dl : DisplayList) (w h : Nat) :
-    pdf dl w h = pdfOf w h ((paintOrder dl).flatMap fun c => lowerShape c.color c.shape) := rfl
+    pdf dl w h = pdfOf w h (dl.paintOrder.flatMap fun c => lowerShape c.color c.shape) := rfl
 
 end Inkproof.Export

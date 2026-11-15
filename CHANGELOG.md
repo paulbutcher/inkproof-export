@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.0
+
+- Painting order is Scene's `DisplayList.paintOrder`; the local `paintOrder` and its theorems are removed.
+
 ## v0.1.0
 
 - SVG and one-page PDF output for every Scene display list command kind, in painting order.

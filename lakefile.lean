@@ -12,7 +12,7 @@ package «inkproof-export» where
     ⟨`warningAsError, true⟩
   ]
 
-require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.4.1"
+require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.6.0"
 
 @[default_target]
 lean_lib InkproofExport where

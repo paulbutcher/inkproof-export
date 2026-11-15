@@ -54,6 +54,6 @@ def svgOf (w h : Nat) (prims : List Prim) : String :=
 def svg (dl : DisplayList) (w h : Nat) : String := svgOf w h (lowerAll dl)
 
 theorem svg_eq (dl : DisplayList) (w h : Nat) :
-    svg dl w h = svgOf w h ((paintOrder dl).flatMap fun c => lowerShape c.color c.shape) := rfl
+    svg dl w h = svgOf w h (dl.paintOrder.flatMap fun c => lowerShape c.color c.shape) := rfl
 
 end Inkproof.Export

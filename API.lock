@@ -17,7 +17,7 @@ instance Inkproof.Export.instReprPrim : Repr Inkproof.Export.Prim
 def Inkproof.Export.instReprPrim.repr : Inkproof.Export.Prim → Nat → Std.Format
 def Inkproof.Export.links : {α β : Type} → (α → β) → (α → α → β) → List α → List β
 def Inkproof.Export.lowerAll : Inkproof.Scene.DisplayList → List Inkproof.Export.Prim
-theorem Inkproof.Export.lowerAll_eq : ∀ (dl : Inkproof.Scene.DisplayList), Inkproof.Export.lowerAll dl = List.flatMap (fun c => Inkproof.Export.lowerShape c.color c.shape) (Inkproof.Export.paintOrder dl)
+theorem Inkproof.Export.lowerAll_eq : ∀ (dl : Inkproof.Scene.DisplayList), Inkproof.Export.lowerAll dl = List.flatMap (fun c => Inkproof.Export.lowerShape c.color c.shape) dl.paintOrder
 def Inkproof.Export.lowerShape : Inkproof.Scene.Color → Inkproof.Scene.Shape → List Inkproof.Export.Prim
 theorem Inkproof.Export.lowerShape_area : ∀ (c : Inkproof.Scene.Color) (y0 : Rat) (items : List (Inkproof.Scene.Item Inkproof.Scene.Pt)), Inkproof.Export.lowerShape c (Inkproof.Scene.Shape.area y0 items) = List.flatMap (Inkproof.Export.links (fun a => Inkproof.Export.Prim.stroke c Inkproof.Export.hairline [{ x := a.x, y := y0 }, a]) fun a b => Inkproof.Export.Prim.fill c [{ x := a.x, y := y0 }, { x := b.x, y := y0 }, b, a]) (Inkproof.Export.runs items)
 theorem Inkproof.Export.lowerShape_circle : ∀ (c : Inkproof.Scene.Color) (p : Inkproof.Scene.Pt) (r : Rat), Inkproof.Export.lowerShape c (Inkproof.Scene.Shape.marker Inkproof.Scene.MarkerShape.circle p r) = [Inkproof.Export.Prim.disc c p r]
@@ -27,15 +27,12 @@ theorem Inkproof.Export.lowerShape_rect : ∀ (c : Inkproof.Scene.Color) (b : In
 theorem Inkproof.Export.lowerShape_square : ∀ (c : Inkproof.Scene.Color) (p : Inkproof.Scene.Pt) (r : Rat), Inkproof.Export.lowerShape c (Inkproof.Scene.Shape.marker Inkproof.Scene.MarkerShape.square p r) = [Inkproof.Export.Prim.fill c [{ x := p.x - r, y := p.y - r }, { x := p.x + r, y := p.y - r }, { x := p.x + r, y := p.y + r }, { x := p.x - r, y := p.y + r }]]
 theorem Inkproof.Export.lowerShape_strip : ∀ (c : Inkproof.Scene.Color) (hw : Rat) (items : List (Inkproof.Scene.Item Inkproof.Scene.Pt)), Inkproof.Export.lowerShape c (Inkproof.Scene.Shape.strip hw items) = List.map (fun r => match r with | [p] => Inkproof.Export.Prim.disc c p (Max.max (2 * hw) Inkproof.Export.hairline / 2) | r => Inkproof.Export.Prim.stroke c (Max.max (2 * hw) Inkproof.Export.hairline) r) (Inkproof.Export.runs items)
 theorem Inkproof.Export.lowerShape_text : ∀ (c : Inkproof.Scene.Color) (b : Inkproof.Scene.Rect) (s : String), Inkproof.Export.lowerShape c (Inkproof.Scene.Shape.text b s) = [Inkproof.Export.Prim.text c b s]
-def Inkproof.Export.paintOrder : Inkproof.Scene.DisplayList → List Inkproof.Scene.Command
-theorem Inkproof.Export.paintOrder_perm : ∀ (dl : Inkproof.Scene.DisplayList), (Inkproof.Export.paintOrder dl).Perm dl.toList
-theorem Inkproof.Export.paintOrder_sorted : ∀ (dl : Inkproof.Scene.DisplayList), List.Pairwise (fun a b => a.layer ≤ b.layer) (Inkproof.Export.paintOrder dl)
 def Inkproof.Export.pdf : Inkproof.Scene.DisplayList → Nat → Nat → ByteArray
 def Inkproof.Export.pdfOf : Nat → Nat → List Inkproof.Export.Prim → ByteArray
-theorem Inkproof.Export.pdf_eq : ∀ (dl : Inkproof.Scene.DisplayList) (w h : Nat), Inkproof.Export.pdf dl w h = Inkproof.Export.pdfOf w h (List.flatMap (fun c => Inkproof.Export.lowerShape c.color c.shape) (Inkproof.Export.paintOrder dl))
+theorem Inkproof.Export.pdf_eq : ∀ (dl : Inkproof.Scene.DisplayList) (w h : Nat), Inkproof.Export.pdf dl w h = Inkproof.Export.pdfOf w h (List.flatMap (fun c => Inkproof.Export.lowerShape c.color c.shape) dl.paintOrder)
 def Inkproof.Export.png : Inkproof.Scene.DisplayList → Inkproof.Scene.Grid → Inkproof.Scene.Color → Option ByteArray
 theorem Inkproof.Export.png_eq : ∀ (dl : Inkproof.Scene.DisplayList) (g : Inkproof.Scene.Grid) (bg : Inkproof.Scene.Color), Inkproof.Export.png dl g bg = Inkproof.Export.encodePng (Inkproof.Scene.render dl g bg)
 def Inkproof.Export.runs : {α : Type} → List (Inkproof.Scene.Item α) → List (List α)
 def Inkproof.Export.svg : Inkproof.Scene.DisplayList → Nat → Nat → String
 def Inkproof.Export.svgOf : Nat → Nat → List Inkproof.Export.Prim → String
-theorem Inkproof.Export.svg_eq : ∀ (dl : Inkproof.Scene.DisplayList) (w h : Nat), Inkproof.Export.svg dl w h = Inkproof.Export.svgOf w h (List.flatMap (fun c => Inkproof.Export.lowerShape c.color c.shape) (Inkproof.Export.paintOrder dl))
+theorem Inkproof.Export.svg_eq : ∀ (dl : Inkproof.Scene.DisplayList) (w h : Nat), Inkproof.Export.svg dl w h = Inkproof.Export.svgOf w h (List.flatMap (fun c => Inkproof.Export.lowerShape c.color c.shape) dl.paintOrder)
