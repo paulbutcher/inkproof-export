@@ -14,6 +14,19 @@ package «inkproof-export-test» where
 
 require «inkproof-export» from ".."
 
-@[default_target, test_driver]
+require «inkproof-tools» from git "https://github.com/paulbutcher/inkproof-tools" @ "v0.2.1"
+
+-- Compile-time tests: compiling is passing.
+@[default_target]
+lean_lib InkproofExportTest where
+  globs := #[.submodules `InkproofExportTest]
+
+@[default_target]
 lean_exe tests where
   root := `Main
+
+@[test_driver]
+script test do
+  let child ← IO.Process.spawn
+    { cmd := "lake", args := #["exe", "inkproof-tools/inkproof-test-driver"], cwd := __dir__ }
+  return if (← child.wait) == 0 then 0 else 1
