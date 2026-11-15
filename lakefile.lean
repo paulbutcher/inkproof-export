@@ -13,6 +13,7 @@ package «inkproof-export» where
   ]
 
 require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.6.0"
+require «inkproof-core» from git "https://github.com/paulbutcher/inkproof-core" @ "v0.8.1"
 
 @[default_target]
 lean_lib InkproofExport where

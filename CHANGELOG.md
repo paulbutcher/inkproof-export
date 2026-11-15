@@ -1,7 +1,8 @@
 # Changelog
 
-## v0.2.0
+## v0.3.0
 
+- `decimal` is built on Core's decimal formatter, with `decimal_spec` stating the value its output denotes and that trimming zeros preserves it.
 - Painting order is Scene's `DisplayList.paintOrder`; the local `paintOrder` and its theorems are removed.
 
 ## v0.1.0
