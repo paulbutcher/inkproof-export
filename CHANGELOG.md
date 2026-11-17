@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.1
+
+- Lasm tests run under @lasm/cli 0.8.0.
+
 ## v0.3.0
 
 - `decimal` is built on Core's decimal formatter, with `decimal_spec` stating the value its output denotes and that trimming zeros preserves it.
