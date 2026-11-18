@@ -15,7 +15,7 @@ def svgTests : List TestCase := [
     check (count s "width=\"8\" height=\"6\" viewBox=\"0 0 8 6\"" == 1) "wrong extents",
   .mk "every command kind draws, and a gap splits a strip" do
     let s := svg everyKind 8 6
-    check (count s "<polyline" == 2) "one polyline per strip run expected"
+    check (count s "<polyline" == 6) "two strip runs, and a line for each envelope and area column"
     check (count s "<polygon" == 5) "envelope and area pair, rectangle, square marker and clipped rectangle"
     check (count s "<circle" == 1) "circle marker"
     check (count s "<text" == 1) "text"

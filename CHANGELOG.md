@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.0
+
+- Lowering uses Scene's `Item.fold` and `Item.runs`; `runs` and `links` are removed, and envelope and area columns are now drawn as lines as well as joined.
+
 ## v0.3.2
 
 - README lists what the library does.

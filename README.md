@@ -8,7 +8,7 @@ Static output of Inkproof display lists as SVG, PDF and PNG, written in Lean. Pa
 - Render a display list as a PNG image through Scene's reference rasterizer, `none` if the image cannot be encoded: `png`; encode an existing raster image as PNG: `encodePng`, `encodable`.
 - Lower a display list or one shape to drawing primitives (fills, strokes, discs, text, clips) shared by the SVG and PDF writers: `lowerAll`, `lowerShape`, `Prim`, `hairline`.
 - Format a rational number as a trimmed decimal string, with a theorem of the value it denotes: `decimal`, `thousandths`, `trimZeros`.
-- Checksums for the PNG and zlib streams: `crc32`, `adler32`; group runs of items and link neighbours in a list: `runs`, `links`.
+- Checksums for the PNG and zlib streams: `crc32`, `adler32`.
 
 ## Requiring it
 

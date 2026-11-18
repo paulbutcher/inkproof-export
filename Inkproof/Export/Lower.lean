@@ -20,18 +20,6 @@ inductive Prim where
   | clipEnd
   deriving Repr
 
-/-- The values of a strip as runs of consecutive values; a gap ends a run and empty runs are dropped. -/
-def runs {α : Type} (items : List (Item α)) : List (List α) :=
-  (items.foldr (fun i acc => match i, acc with
-    | .gap, acc => [] :: acc
-    | .val a, r :: rs => (a :: r) :: rs
-    | .val a, [] => [[a]]) [[]]).filter (· ≠ [])
-
-/-- One element for each adjacent pair of a run, or for its lone value when it has no neighbour. -/
-def links {α β : Type} (single : α → β) (join : α → α → β) : List α → List β
-  | [a] => [single a]
-  | r => List.zipWith join r r.tail
-
 /-- Narrowest width at which a stroke is still drawn, so a zero half-width strip stays visible. -/
 def hairline : Rat := 1
 
@@ -42,17 +30,17 @@ private def corners (b : Rect) : List Pt :=
 def lowerShape (color : Color) : Shape → List Prim
   | .strip hw items =>
     let w := max (2 * hw) hairline
-    (runs items).map fun r => match r with
+    (Item.runs items |>.filter (· ≠ [])).map fun r => match r with
       | [p] => .disc color p (w / 2)
       | r => .stroke color w r
   | .envelope items =>
-    (runs items).flatMap <| links
+    Item.fold
       (fun c => .stroke color hairline [⟨c.x, c.lo⟩, ⟨c.x, c.hi⟩])
-      (fun a b => .fill color [⟨a.x, a.lo⟩, ⟨b.x, b.lo⟩, ⟨b.x, b.hi⟩, ⟨a.x, a.hi⟩])
+      (fun a b => .fill color [⟨a.x, a.lo⟩, ⟨b.x, b.lo⟩, ⟨b.x, b.hi⟩, ⟨a.x, a.hi⟩]) items
   | .area y0 items =>
-    (runs items).flatMap <| links
+    Item.fold
       (fun a => .stroke color hairline [⟨a.x, y0⟩, a])
-      (fun a b => .fill color [⟨a.x, y0⟩, ⟨b.x, y0⟩, b, a])
+      (fun a b => .fill color [⟨a.x, y0⟩, ⟨b.x, y0⟩, b, a]) items
   | .rect b => [.fill color (corners b)]
   | .marker .square c r => [.fill color (corners ⟨c.x - r, c.y - r, c.x + r, c.y + r⟩)]
   | .marker .circle c r => [.disc color c r]
@@ -61,21 +49,21 @@ def lowerShape (color : Color) : Shape → List Prim
 
 theorem lowerShape_strip (c : Color) (hw : Rat) (items : List (Item Pt)) :
     lowerShape c (.strip hw items) =
-      (runs items).map fun r => match r with
+      (Item.runs items |>.filter (· ≠ [])).map fun r => match r with
         | [p] => .disc c p (max (2 * hw) hairline / 2)
         | r => .stroke c (max (2 * hw) hairline) r := rfl
 
 theorem lowerShape_envelope (c : Color) (items : List (Item Column)) :
     lowerShape c (.envelope items) =
-      (runs items).flatMap (links
+      Item.fold
         (fun k => .stroke c hairline [⟨k.x, k.lo⟩, ⟨k.x, k.hi⟩])
-        (fun a b => .fill c [⟨a.x, a.lo⟩, ⟨b.x, b.lo⟩, ⟨b.x, b.hi⟩, ⟨a.x, a.hi⟩])) := rfl
+        (fun a b => .fill c [⟨a.x, a.lo⟩, ⟨b.x, b.lo⟩, ⟨b.x, b.hi⟩, ⟨a.x, a.hi⟩]) items := rfl
 
 theorem lowerShape_area (c : Color) (y0 : Rat) (items : List (Item Pt)) :
     lowerShape c (.area y0 items) =
-      (runs items).flatMap (links
+      Item.fold
         (fun a => .stroke c hairline [⟨a.x, y0⟩, a])
-        (fun a b => .fill c [⟨a.x, y0⟩, ⟨b.x, y0⟩, b, a])) := rfl
+        (fun a b => .fill c [⟨a.x, y0⟩, ⟨b.x, y0⟩, b, a]) items := rfl
 
 theorem lowerShape_square (c : Color) (p : Pt) (r : Rat) :
     lowerShape c (.marker .square p r) =
