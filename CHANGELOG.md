@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0
+
+- `decimal` rounds and trims with Core's `Decimal.roundScaled` and `Decimal.trimZeros`; `thousandths`, `trimZeros` and their theorems are removed.
+
 ## v0.4.0
 
 - Lowering uses Scene's `Item.fold` and `Item.runs`; `runs` and `links` are removed, and envelope and area columns are now drawn as lines as well as joined.

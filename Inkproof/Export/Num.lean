@@ -8,50 +8,18 @@ namespace Inkproof.Export
 
 open Inkproof.Core.Decimal
 
-/-- `q` rounded to thousandths, as a whole number of thousandths. -/
-def thousandths (q : Rat) : Int := (q * 1000 + 1 / 2).floor
-
-/-- The fractional digits without their trailing zeros. -/
-def trimZeros (frac : List Char) : List Char := (frac.reverse.dropWhile (· == '0')).reverse
-
 /-- `q` rounded to three decimal places, without trailing zeros and without the point if no fraction is left. -/
-def decimal (q : Rat) : String :=
-  match splitAtChar '.' (formatDecimal 3 (thousandths q)) with
-  | (whole, some frac) => String.ofList (whole ++ (if trimZeros frac = [] then [] else '.' :: trimZeros frac))
-  | (whole, none) => String.ofList whole
+def decimal (q : Rat) : String := String.ofList (trimZeros (formatDecimal 3 (roundScaled 3 q)))
 
-theorem thousandths_close (q : Rat) :
-    q - 1 / 2000 ≤ (thousandths q : Rat) / 1000 ∧ (thousandths q : Rat) / 1000 ≤ q + 1 / 2000 := by
-  have h1 := Rat.floor_le (q * 1000 + 1 / 2)
-  have h2 := Rat.lt_floor_add_one (q * 1000 + 1 / 2)
-  unfold thousandths
-  constructor <;> grind
-
-theorem trimZeros_spec (frac : List Char) :
-    ∃ k, frac = trimZeros frac ++ List.replicate k '0' ∧ (trimZeros frac).getLast? ≠ some '0' := by
-  have pre : ∀ r : List Char, ∃ k, r = List.replicate k '0' ++ r.dropWhile (· == '0') := by
-    intro r
-    induction r with
-    | nil => exact ⟨0, rfl⟩
-    | cons c t ih =>
-      by_cases h : c = '0'
-      · obtain ⟨k, hk⟩ := ih
-        subst h
-        have e : ('0' :: t).dropWhile (· == '0') = t.dropWhile (· == '0') := by simp
-        exact ⟨k + 1, by rw [e, List.replicate_succ, List.cons_append, ← hk]⟩
-      · exact ⟨0, by simp [h]⟩
-  obtain ⟨k, hk⟩ := pre frac.reverse
-  refine ⟨k, ?_, ?_⟩
-  · have := congrArg List.reverse hk
-    simpa [trimZeros] using this
-  · simp only [trimZeros, List.getLast?_reverse]
-    generalize frac.reverse = r
-    induction r with
-    | nil => simp
-    | cons c t ih =>
-      by_cases h : c = '0'
-      · subst h; simpa using ih
-      · simp [h]
+private theorem trimFrac_getLast (f : List Char) : (trimFrac f).getLast? ≠ some '0' := by
+  simp only [trimFrac, List.getLast?_reverse]
+  generalize f.reverse = r
+  induction r with
+  | nil => simp
+  | cons c t ih =>
+    by_cases h : c = '0'
+    · subst h; simpa using ih
+    · simp [h]
 
 private theorem digitsValue_append_zeros (l : List Char) (k : Nat) :
     digitsValue (l ++ List.replicate k '0') = digitsValue l * 10 ^ k := by
@@ -68,26 +36,36 @@ theorem decimal_spec (q : Rat) : ∃ (neg : Bool) (whole frac : List Char),
     (decimal q).toList = (if neg then ['-'] else []) ++ whole ++ (if frac = [] then [] else '.' :: frac) ∧
     whole ≠ [] ∧ frac.length ≤ 3 ∧ frac.getLast? ≠ some '0' ∧
     (∀ c ∈ whole ++ frac, c.isDigit = true) ∧
-    (neg = true ↔ thousandths q < 0) ∧
-    (if neg then -1 else 1) * (digitsValue (whole ++ frac) : Rat) / 10 ^ frac.length = thousandths q / 1000 ∧
+    (neg = true ↔ roundScaled 3 q < 0) ∧
+    (if neg then -1 else 1) * (digitsValue (whole ++ frac) : Rat) / 10 ^ frac.length = roundScaled 3 q / 1000 ∧
     q - 1 / 2000 ≤ (if neg then -1 else 1) * (digitsValue (whole ++ frac) : Rat) / 10 ^ frac.length ∧
     (if neg then -1 else 1) * (digitsValue (whole ++ frac) : Rat) / 10 ^ frac.length ≤ q + 1 / 2000 := by
-  have hc := thousandths_close q
-  obtain ⟨whole, frac0, hf, hw, hl, hd, hv⟩ := formatNat_spec 3 (thousandths q).natAbs
-  obtain ⟨k, hk, hlast⟩ := trimZeros_spec frac0
-  have hsplit : decimal q = String.ofList ((if thousandths q < 0 then ['-'] else []) ++ whole ++
-      (if trimZeros frac0 = [] then [] else '.' :: trimZeros frac0)) := by
-    have hnd : '.' ∉ (if thousandths q < 0 then ['-'] else []) ++ whole := by
+  have hc : q - 1 / 2000 ≤ (roundScaled 3 q : Rat) / 1000 ∧ (roundScaled 3 q : Rat) / 1000 ≤ q + 1 / 2000 := by
+    have h := roundScaled_close 3 q
+    have e : ((10 ^ 3 : Nat) : Rat) = 1000 := by decide +kernel
+    rw [e] at h
+    constructor <;> grind
+  obtain ⟨whole, frac0, hf, hw, hl, hd, hv⟩ := formatNat_spec 3 (roundScaled 3 q).natAbs
+  obtain ⟨z, hz, hz0⟩ := trimFrac_prefix frac0
+  have hzr : z = List.replicate z.length '0' := List.eq_replicate_iff.2 ⟨rfl, hz0⟩
+  have hk : frac0 = trimFrac frac0 ++ List.replicate z.length '0' := by rw [← hzr]; exact hz
+  have hlast := trimFrac_getLast frac0
+  have hsplit : decimal q = String.ofList ((if roundScaled 3 q < 0 then ['-'] else []) ++ whole ++
+      (if trimFrac frac0 = [] then [] else '.' :: trimFrac frac0)) := by
+    have hnd : '.' ∉ (if roundScaled 3 q < 0 then ['-'] else []) ++ whole := by
       intro h
       simp only [List.mem_append] at h
       rcases h with h | h
-      · by_cases hneg : thousandths q < 0 <;> simp [hneg] at h
+      · by_cases hneg : roundScaled 3 q < 0 <;> simp [hneg] at h
       · have := hd '.' (by simp [h]); simp at this
-    have e : formatDecimal 3 (thousandths q) = ((if thousandths q < 0 then ['-'] else []) ++ whole) ++ '.' :: frac0 := by
+    have e : formatDecimal 3 (roundScaled 3 q) = ((if roundScaled 3 q < 0 then ['-'] else []) ++ whole) ++ '.' :: frac0 := by
       rw [formatDecimal_spec, hf]; simp [List.append_assoc]
-    rw [decimal, e, splitAtChar_some _ _ _ hnd]
-  generalize thousandths q = n at hsplit hc hv ⊢
-  generalize trimZeros frac0 = t at hk hlast hsplit
+    have hsd : '.' ∉ (if roundScaled 3 q < 0 then ['-'] else []) ++ whole := hnd
+    rw [decimal, e, trimZeros_spec _ _ hsd]
+    by_cases h : trimFrac frac0 = [] <;> simp [h, List.append_assoc]
+  generalize roundScaled 3 q = n at hsplit hc hv ⊢
+  generalize trimFrac frac0 = t at hk hlast hsplit
+  generalize z.length = k at hk
   have hlen : t.length + k = 3 := by
     have := congrArg List.length hk
     simp at this; omega

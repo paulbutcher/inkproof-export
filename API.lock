@@ -8,7 +8,7 @@ constructor Inkproof.Export.Prim.text : Inkproof.Scene.Color → Inkproof.Scene.
 def Inkproof.Export.adler32 : ByteArray → UInt32
 def Inkproof.Export.crc32 : ByteArray → UInt32
 def Inkproof.Export.decimal : Rat → String
-theorem Inkproof.Export.decimal_spec : ∀ (q : Rat), ∃ neg whole frac, ((Inkproof.Export.decimal q).toList = (if neg = Bool.true then ['-'] else []) ++ whole ++ if frac = [] then [] else '.' :: frac) ∧ whole ≠ [] ∧ frac.length ≤ 3 ∧ frac.getLast? ≠ Option.some '0' ∧ (∀ (c : Char), c ∈ whole ++ frac → c.isDigit = Bool.true) ∧ (neg = Bool.true ↔ Inkproof.Export.thousandths q < 0) ∧ (if neg = Bool.true then -1 else 1) * ↑(Inkproof.Core.Decimal.digitsValue (whole ++ frac)) / 10 ^ frac.length = ↑(Inkproof.Export.thousandths q) / 1000 ∧ q - 1 / 2000 ≤ (if neg = Bool.true then -1 else 1) * ↑(Inkproof.Core.Decimal.digitsValue (whole ++ frac)) / 10 ^ frac.length ∧ (if neg = Bool.true then -1 else 1) * ↑(Inkproof.Core.Decimal.digitsValue (whole ++ frac)) / 10 ^ frac.length ≤ q + 1 / 2000
+theorem Inkproof.Export.decimal_spec : ∀ (q : Rat), ∃ neg whole frac, ((Inkproof.Export.decimal q).toList = (if neg = Bool.true then ['-'] else []) ++ whole ++ if frac = [] then [] else '.' :: frac) ∧ whole ≠ [] ∧ frac.length ≤ 3 ∧ frac.getLast? ≠ Option.some '0' ∧ (∀ (c : Char), c ∈ whole ++ frac → c.isDigit = Bool.true) ∧ (neg = Bool.true ↔ Inkproof.Core.Decimal.roundScaled 3 q < 0) ∧ (if neg = Bool.true then -1 else 1) * ↑(Inkproof.Core.Decimal.digitsValue (whole ++ frac)) / 10 ^ frac.length = ↑(Inkproof.Core.Decimal.roundScaled 3 q) / 1000 ∧ q - 1 / 2000 ≤ (if neg = Bool.true then -1 else 1) * ↑(Inkproof.Core.Decimal.digitsValue (whole ++ frac)) / 10 ^ frac.length ∧ (if neg = Bool.true then -1 else 1) * ↑(Inkproof.Core.Decimal.digitsValue (whole ++ frac)) / 10 ^ frac.length ≤ q + 1 / 2000
 def Inkproof.Export.encodable : Inkproof.Scene.Image → Prop
 def Inkproof.Export.encodePng : Inkproof.Scene.Image → Option ByteArray
 theorem Inkproof.Export.encodePng_isSome : ∀ (img : Inkproof.Scene.Image), (Inkproof.Export.encodePng img).isSome = Bool.true ↔ Inkproof.Export.encodable img
@@ -35,7 +35,3 @@ theorem Inkproof.Export.png_eq : ∀ (dl : Inkproof.Scene.DisplayList) (g : Inkp
 def Inkproof.Export.svg : Inkproof.Scene.DisplayList → Nat → Nat → String
 def Inkproof.Export.svgOf : Nat → Nat → List Inkproof.Export.Prim → String
 theorem Inkproof.Export.svg_eq : ∀ (dl : Inkproof.Scene.DisplayList) (w h : Nat), Inkproof.Export.svg dl w h = Inkproof.Export.svgOf w h (List.flatMap (fun c => Inkproof.Export.lowerShape c.color c.shape) dl.paintOrder)
-def Inkproof.Export.thousandths : Rat → Int
-theorem Inkproof.Export.thousandths_close : ∀ (q : Rat), q - 1 / 2000 ≤ ↑(Inkproof.Export.thousandths q) / 1000 ∧ ↑(Inkproof.Export.thousandths q) / 1000 ≤ q + 1 / 2000
-def Inkproof.Export.trimZeros : List Char → List Char
-theorem Inkproof.Export.trimZeros_spec : ∀ (frac : List Char), ∃ k, frac = Inkproof.Export.trimZeros frac ++ List.replicate k '0' ∧ (Inkproof.Export.trimZeros frac).getLast? ≠ Option.some '0'
