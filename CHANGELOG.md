@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.1
+
+- Internal padding, hex and de-duplication use Core's `List.leftpad`, `Nat.toDigits` and `List.eraseDups`; no public declaration changes.
+
 ## v0.5.0
 
 - `decimal` rounds and trims with Core's `Decimal.roundScaled` and `Decimal.trimZeros`; `thousandths`, `trimZeros` and their theorems are removed.
