@@ -7,3 +7,7 @@
 ## PNG
 
 `png` renders with Scene's `render` and encodes the image as 8-bit RGBA. The deflate stream uses stored blocks, so the file is uncompressed and needs no compressor; there is nothing to reimplement of the rasterizer. A grid with no pixels has no PNG.
+
+## Core declarations
+
+Colour hex digits, PDF xref offsets and the distinct opacities use `Nat.toDigits`, `List.leftpad` and `List.eraseDups`. They are structural list functions over `Nat` and `Char` with no runtime string primitives (unlike `BitVec.toHex`), so nothing in them is specific to native code.

@@ -21,9 +21,7 @@ private def primColor : Prim → Option Color
 
 /-- The distinct partial opacities that the primitives use. -/
 private def alphas (prims : List Prim) : List UInt8 :=
-  prims.foldl (fun acc p => match primColor p with
-    | some c => (alphaOf c).foldl (fun acc a => if acc.contains a then acc else acc ++ [a]) acc
-    | none => acc) []
+  (prims.flatMap fun p => (primColor p).elim [] alphaOf).eraseDups
 
 private def gs (c : Color) : String := "".intercalate ((alphaOf c).map fun a => s!"/G{a} gs ")
 
@@ -80,7 +78,7 @@ def pdfOf (w h : Nat) (prims : List Prim) : ByteArray := Id.run do
     offsets := offsets.push out.size
     out := out ++ s!"{i + 1} 0 obj\n".toUTF8 ++ o ++ "\nendobj\n".toUTF8
   let xref := out.size
-  let pad (n : Nat) : String := let s := toString n; "".pushn '0' (10 - s.length) ++ s
+  let pad (n : Nat) : String := String.ofList (List.leftpad 10 '0' (toString n).toList)
   out := out ++ s!"xref\n0 {objects.length + 1}\n0000000000 65535 f \n".toUTF8
   for off in offsets do
     out := out ++ s!"{pad off} 00000 n \n".toUTF8

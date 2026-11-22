@@ -10,8 +10,7 @@ namespace Inkproof.Export
 open Inkproof.Scene
 
 private def hex2 (n : UInt8) : String :=
-  let d (k : Nat) : Char := Nat.digitChar k
-  String.ofList [d (n.toNat / 16), d (n.toNat % 16)]
+  String.ofList (List.leftpad 2 '0' (Nat.toDigits 16 n.toNat))
 
 private def escape (s : String) : String :=
   s.foldl (fun acc c => acc ++ match c with
