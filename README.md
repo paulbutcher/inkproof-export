@@ -13,5 +13,7 @@ Static output of Inkproof display lists as SVG, PDF and PNG, written in Lean. Pa
 ## Requiring it
 
 ```lean
-require «inkproof-export» from git "https://github.com/paulbutcher/inkproof-export" @ "v0.3.1"
+require «inkproof-export» from git "https://github.com/paulbutcher/inkproof-export" @ "<latest release tag>"
 ```
+
+Use the latest release tag listed in `CHANGELOG.md`; `lakefile.lean` records the pins this library itself builds against.
