@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.2
+
+- README's require example no longer names a version.
+
 ## v0.5.1
 
 - Internal padding, hex and de-duplication use Core's `List.leftpad`, `Nat.toDigits` and `List.eraseDups`; no public declaration changes.
